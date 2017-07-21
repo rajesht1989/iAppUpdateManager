@@ -168,74 +168,81 @@
     } else {
         url = [NSURL URLWithString:[NSString stringWithFormat:@"http://itunes.apple.com/lookup?id=%@",_appId]];
     }
-    
-    NSData* data = [NSData dataWithContentsOfURL:url];
-    NSDictionary* lookup = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-    
-    if ([lookup[@"resultCount"] integerValue] == 1) {
-        NSString* appStoreVersion = [lookup[@"results"] firstObject][@"version"];
-        NSString* trackViewUrl = [lookup[@"results"] firstObject][@"trackViewUrl"];
-        NSString* currentVersion = infoDictionary[@"CFBundleShortVersionString"];
-        [_model setAppLaunchCount:_model.appLaunchCount + 1];
-        if ([self canShowAlert:currentVersion version:appStoreVersion]) {
-            UIViewController *topViewController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
-            
-            while (topViewController.presentedViewController != nil) topViewController = topViewController.presentedViewController;
-            
-            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Alert", nil) message:NSLocalizedString(@"An update is available in appstore. Would you like to download?", nil) preferredStyle:UIAlertControllerStyleAlert];
-            [topViewController presentViewController:alertController animated:YES completion:nil];
-            
-            [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil) style:UIAlertActionStyleCancel handler:nil]];
-            [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Update", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-                if (@available(iOS 10.0, *)) {
-                    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:trackViewUrl] options:@{} completionHandler:nil];
-                } else {
-                    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:trackViewUrl]];
-                }
-            }]];
-            if (_shouldShowLater) {
-                [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Later", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSData* data = [NSData dataWithContentsOfURL:url];
+        if (data == nil) return;
+        NSDictionary* lookup = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+        
+        if ([lookup[@"resultCount"] integerValue] == 1) {
+            NSString* appStoreVersion = [lookup[@"results"] firstObject][@"version"];
+            NSString* trackViewUrl = [lookup[@"results"] firstObject][@"trackViewUrl"];
+            NSString* currentVersion = infoDictionary[@"CFBundleShortVersionString"];
+            [_model setAppLaunchCount:_model.appLaunchCount + 1];
+            if ([self canShowAlert:currentVersion version:appStoreVersion]) {
+                dispatch_async( dispatch_get_main_queue(), ^{
+                    UIViewController *topViewController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
+                    
+                    while (topViewController.presentedViewController != nil) topViewController = topViewController.presentedViewController;
+                    
+                    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Alert", nil) message:NSLocalizedString(@"An update is available in appstore. Would you like to download?", nil) preferredStyle:UIAlertControllerStyleAlert];
+                    [topViewController presentViewController:alertController animated:YES completion:nil];
+                    
+                    [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil) style:UIAlertActionStyleCancel handler:nil]];
+                    [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Update", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                        if (@available(iOS 10.0, *)) {
+                            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:trackViewUrl] options:@{} completionHandler:nil];
+                        } else {
+                            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:trackViewUrl]];
+                        }
+                    }]];
+                    if (_shouldShowLater) {
+                        [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Later", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                            [_model setAppLaunchCount:0];
+                            [_model setShowLater:YES];
+                            [_model save];
+                        }]];
+                    }
+                    if (_shouldShowSkipThisUpdate) {
+                        [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Skip this version", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                            [_model setSkippedVersion:appStoreVersion];
+                            [_model save];
+                        }]];
+                    }
+                    if (_shouldShowNever) {
+                        [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Do not show this again", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                            [_model setNeverShow:YES];
+                            [_model save];
+                        }]];
+                    }
+                    [_model setShowLater:NO];
                     [_model setAppLaunchCount:0];
-                    [_model setShowLater:YES];
-                    [_model save];
-                }]];
+                    [_model setLastShownDate:[NSDate date]];
+                });
             }
-            if (_shouldShowSkipThisUpdate) {
-                [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Skip this version", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-                    [_model setSkippedVersion:appStoreVersion];
-                    [_model save];
-                }]];
-            }
-            if (_shouldShowNever) {
-                [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Do not show this again", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-                    [_model setNeverShow:YES];
-                    [_model save];
-                }]];
-            }
-            [_model setShowLater:NO];
-            [_model setAppLaunchCount:0];
-            [_model setLastShownDate:[NSDate date]];
-        }
             [_model save];
-    }
+        }
+    });
 }
 
 - (BOOL)canShowAlert:(NSString*)currentVersion version:(NSString*)appStoreVersion {
-    BOOL canShowAlert = NO;
-    
+    BOOL isAppUpdated = NO;
     NSArray *currentVersionCompnts = [currentVersion componentsSeparatedByString:@"."];
     NSArray *appStoreVersionCompnts = [appStoreVersion componentsSeparatedByString:@"."];
-
+    
     NSInteger index = 0;
     for (NSString *aComponent in appStoreVersionCompnts) {
-        if ([aComponent integerValue] > [currentVersionCompnts[index] integerValue]) {
-            canShowAlert = YES;
-            break;
+        if ([currentVersionCompnts count] > index) {
+            if ([aComponent integerValue] > [currentVersionCompnts[index] integerValue]) {
+                isAppUpdated = YES;
+                break;
+            } else if ([aComponent integerValue] < [currentVersionCompnts[index] integerValue]) break;
+        } else {
+            isAppUpdated = YES;
         }
         index++;
     }
-    if (canShowAlert == NO) return canShowAlert;
-    canShowAlert = NO;
+    if (isAppUpdated == NO) return isAppUpdated;
+    BOOL canShowAlert = NO;
     if (_showFromLaunch <= _model.appLaunchCount && [appStoreVersion isEqualToString:_model.skippedVersion] == NO && ((_model.showLater && _model.appLaunchCount > 10) || _model.showLater == NO))
     {
         if (_model.lastShownDate == nil) {
@@ -256,7 +263,7 @@
                     break;
             }
         }
-
+        
     }
     return canShowAlert;
 }

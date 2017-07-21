@@ -10,10 +10,9 @@ iAppUpdateManager helps your users to update app to latest version available on 
 
 
 ```
-iAppUpdateManager *manager = [iAppUpdateManager manager];
-[manager evaluateAndShow];
+[[iAppUpdateManager manager] evaluateAndShow];
 ```
-Generally this code is recommended to have in ```-application:didFinishLaunchingWithOptions:``` after a delay.
+Generally this code is recommended to have in ```-application:didFinishLaunchingWithOptions:```
 
 ![alt tag](https://github.com/rajesht1989/PublicAssets/raw/master/iAppUpdateManager/DefaultOption.png)
 
