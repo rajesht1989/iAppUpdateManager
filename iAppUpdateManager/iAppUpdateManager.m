@@ -214,10 +214,10 @@
                             [_model save];
                         }]];
                     }
-                    [_model setShowLater:NO];
-                    [_model setAppLaunchCount:0];
-                    [_model setLastShownDate:[NSDate date]];
                 });
+                [_model setShowLater:NO];
+                [_model setAppLaunchCount:0];
+                [_model setLastShownDate:[NSDate date]];
             }
             [_model save];
         }
