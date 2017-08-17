@@ -248,7 +248,7 @@
         if (_model.lastShownDate == nil) {
             canShowAlert = YES;
         } else {
-            NSInteger hoursBetween = _model.lastShownDate.timeIntervalSinceNow / 3600;
+            NSInteger hoursBetween = abs((int)_model.lastShownDate.timeIntervalSinceNow / 3600);
             switch (_showType) {
                 case kOnFirstLaunchOfADay :
                     canShowAlert = hoursBetween >= 24;

@@ -106,7 +106,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "iAppUpdateManager/iAppUpdateManager.m"
-            timestampString = "522314813.40172"
+            timestampString = "523560681.966409"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "172"
@@ -122,7 +122,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "iAppUpdateManager/iAppUpdateManager.m"
-            timestampString = "522314813.402049"
+            timestampString = "523560681.966798"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "228"
@@ -138,12 +138,44 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "iAppUpdateManager/iAppUpdateManager.m"
-            timestampString = "522314813.402288"
+            timestampString = "523560681.967072"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "244"
             endingLineNumber = "244"
             landmarkName = "-canShowAlert:version:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "iAppUpdateManager/iAppUpdateManager.m"
+            timestampString = "523560681.96734"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "248"
+            endingLineNumber = "248"
+            landmarkName = "-canShowAlert:version:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "iAppUpdateManager/iAppUpdateManager.m"
+            timestampString = "523560681.967607"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "86"
+            endingLineNumber = "86"
+            landmarkName = "-propertyKeys"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
